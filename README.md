@@ -1,108 +1,121 @@
-Project Description
+**Project Description**
 
-XSS Detector is a PowerShell-based security tool that identifies and demonstrates Reflected Cross-Site Scripting (XSS) vulnerabilities in web applications. This utility tests target endpoints for XSS susceptibility by injecting various payloads and analyzing responses.
+XSS Hunter is an advanced PowerShell-based security tool designed to identify and validate Reflected Cross-Site Scripting (XSS) vulnerabilities in web applications. The tool automates the detection process while providing comprehensive reporting and proof-of-concept generation.
 
-Languages and Utilities Used:
+**Key Features**: 
 
-PowerShell (Primary scripting language)
-cURL/Invoke-WebRequest (HTTP request handling)
-HTML/JavaScript (XSS payload generation)
-
-Environments Used:
-
-Windows 10
-Linux (With PowerShell Core installed)
-
-Features:
-
-Automated XSS payload injection
-Multiple payload variations testing
-Risk assessment and reporting
+Automated XSS payload injection testing
+Multiple payload variations (classic, encoded, polyglot)
+Context-aware vulnerability detection
+Interactive proof-of-concept generator
+Professional HTML/PDF reporting
 Safe demonstration mode (non-malicious alerts)
-Support for GET/POST parameter testing
 
+**Installation:**
 
-Program Walk-through:
+# Install required modules
+Install-Module -Name Invoke-WebRequest -Force
+Install-Module -Name HtmlAgilityPack -Force
 
+# Clone repository
+git clone https://github.com/yourusername/xss-hunter.git
+cd xss-hunter
 
-Installation:
+# Run tool
+.\XSSHunter.ps1
 
-# Clone the repository
-git clone https://github.com/yourusername/xss-detector.git
-cd xss-detector
+**Usage Examples**
 
-# Run the tool
-.\XSSDetector.ps1
+**Basic scan:**
+.\XSSHunter.ps1 -Url "http://testphp.vulnweb.com/search"
 
-Usage Examples
+**Comprehensive test:**
+.\XSSHunter.ps1 -Url "http://testphp.vulnweb.com/search" -TestAllPayloads -GenerateReport
 
-Basic scan:
-.\XSSDetector.ps1 -Url "http://testphp.vulnweb.com/search"
+**Parameter-specific testing:**
+.\XSSHunter.ps1 -Url "http://testphp.vulnweb.com/search" -Parameter "query"
 
-Comprehensive test with all payloads:
-.\XSSDetector.ps1 -Url "http://testphp.vulnweb.com/search" -TestAllPayloads
+**Technical Implementation**
+# Core XSS testing function
+function Test-ReflectedXSS {
+    param(
+        [string]$Url,
+        [string]$Parameter,
+        [switch]$TestAllPayloads
+    )
 
-Test specific parameter:
-.\XSSDetector.ps1 -Url "http://testphp.vulnweb.com/search" -Parameter "query"
-
-Sample Code Structure:
-
-# XSSDetector.ps1
-
-param(
-    [string]$Url,
-    [string]$Parameter = "query",
-    [switch]$TestAllPayloads,
-    [switch]$GenerateReport
-)
-
-# Import modules
-. .\modules\xss-payloads.ps1
-. .\modules\http-request.ps1
-. .\modules\report-generator.ps1
-
-function Main {
-    Write-Host "=== XSS Detector - Reflected XSS Vulnerability Scanner ===" -ForegroundColor Cyan
-    
-    # Validate URL
-    if (-not $Url) {
-        $Url = Read-Host "Enter target URL (e.g., http://example.com/search)"
-    }
-    
-    # Generate payloads
+    # Load payload library
     $payloads = Get-XSSPayloads -All:$TestAllPayloads
-    
+
     # Test each payload
-    $results = @()
-    foreach ($payload in $payloads) {
+    $results = foreach ($payload in $payloads) {
         $response = Invoke-TestRequest -Url $Url -Parameter $Parameter -Payload $payload
-        $results += [PSCustomObject]@{
+        
+        [PSCustomObject]@{
             Payload = $payload
             IsVulnerable = $response.Contains($payload)
-            ResponseCode = $response.StatusCode
+            Context = Get-ResponseContext -Response $response
+            ProofOfConcept = New-POC -Url $Url -Parameter $Parameter -Payload $payload
         }
     }
-    
+
     # Generate report
-    if ($GenerateReport) {
-        New-Report -Results $results -Url $Url
-    }
-    
-    # Show summary
-    Show-ResultsSummary -Results $results
+    New-Report -Results $results -Url $Url
 }
 
-Main
+**Sample Report**
+# XSS VULNERABILITY REPORT
 
-Security Considerations:
+## Target: http://testphp.vulnweb.com/search
+## Test Date: $(Get-Date -Format "yyyy-MM-dd")
 
-Only test against systems you own or have permission to scan
-Default payloads are non-destructive (alert-based)
-Includes rate limiting to avoid overwhelming servers
-Clearly marks vulnerable endpoints in reports
+### Critical Findings:
+- [x] Reflected XSS via 'query' parameter
+- [x] Unfiltered script execution in search results
+- [x] Session hijacking possible via cookie theft
 
-Impact Assessment:
-Vulnerability	Risk Level	Potential Impact
-Reflected XSS	High	Session hijacking, phishing, malware delivery
-Unfiltered Input	Medium	Defacement, limited script execution
-Partial Encoding	Low	Possible exploitation under specific conditions
+### Proof of Concept:
+```html
+http://testphp.vulnweb.com/search?query=<script>alert(document.cookie)</script>
+
+
+**Risk Assessment:**
+Aspect	Rating
+Exploit Difficulty	Low
+Potential Impact	High
+Overall Risk	Critical
+
+**Recommendations:**
+
+Implement input validation on all user-controllable inputs
+Apply context-aware output encoding
+Deploy Content Security Policy (CSP)
+Set HTTPOnly and Secure flags on cookies
+
+
+## Security Considerations
+- Ethical use only policy enforced
+- Built-in rate limiting to prevent service disruption
+- Non-destructive payloads used by default
+- Clear disclaimer about authorized testing
+
+## Roadmap
+- [ ] DOM-based XSS detection
+- [ ] Automated remediation suggestions
+- [ ] Integration with bug tracking systems
+- [ ] Browser extension for manual testing
+
+## License
+MIT License - Free for non-commercial use with attribution
+
+## Contribution Guidelines
+We welcome contributions for:
+- New XSS payload variations
+- Improved context detection
+- Additional reporting formats
+- Browser compatibility enhancements
+
+```diff
++ Note: Always obtain proper authorization before testing
+! Warning: Malicious use of this tool is prohibited
+# Remember: Responsible disclosure is encouraged
