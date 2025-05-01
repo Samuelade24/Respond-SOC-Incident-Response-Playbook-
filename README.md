@@ -2,7 +2,7 @@
 
 Reflected XSS report, enhanced with threat modeling, compliance mapping, and deep technical insights:
 
-## 🔍 Reflected XSS Assessment: Damn Vulnerability Web Application
+## 🔍 Reflected XSS Assessment: Damn Vulnerability Web Application DVWA
 
 ### Threat Model
 ```mermaid
